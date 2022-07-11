@@ -61,30 +61,79 @@ const modelTransformationPost = (req = request, res = response) => {
 
                   
                   let indice = UML_CLASS.findIndex( el => el.class_name === item_children.name );
+ 
+                  let cantidad = 0;
 
                   item.children.forEach( ebo_children => {
 
                      if(ebo_children.type === 'Data Field') {
 
-                        if( ebo_children.domain === 'Text' ) {
-                           UML_CLASS[indice].class_attributes.push({ attribute_name: ebo_children.name, attribute_domain: 'String', attribute_type: 'var', requested_creation: 'No', null_allowed: 'Yes' });
-                        }
-
-                        if( ebo_children.domain === 'Number' ) {
-                           UML_CLASS[indice].class_attributes.push({ attribute_name: ebo_children.name, attribute_domain: 'Integer', attribute_type: 'var', requested_creation: 'No', null_allowed: 'Yes' });
-                        }
-
-                        if( ebo_children.domain === 'Money' ) {
-                           UML_CLASS[indice].class_attributes.push({ attribute_name: ebo_children.name, attribute_domain: 'Integer', attribute_type: 'var', requested_creation: 'No', null_allowed: 'Yes' });
-                        }
-
-                        if( ebo_children.domain === 'Date' ) {
-                           UML_CLASS[indice].class_attributes.push({ attribute_name: ebo_children.name, attribute_domain: 'Date', attribute_type: 'var', requested_creation: 'No', null_allowed: 'Yes' });
-                        }
+                        cantidad += 1;
             
                      }
 
                   });
+
+                  if( cantidad > 1 ) {
+                     UML_CLASS[indice].class_services.push({ service_name: 'set_' + item.name, argument_name: 'p_this' + item_children.name, data_type: item_children.name });
+                  }
+
+                  item.children.forEach( ebj_children => {
+
+                    if( ebj_children.type === 'Data Field') {
+                        
+                     if( cantidad === 1) {
+
+                              if( ebj_children.domain === 'Text' ) {
+                                 UML_CLASS[indice].class_attributes.push({ attribute_name: ebj_children.name, attribute_domain: 'String', attribute_type: 'var', requested_creation: 'No', null_allowed: 'Yes' });
+                                 UML_CLASS[indice].class_services.push({ service_name: 'set_' + ebj_children.name, argument_name: 'p_this' + item_children.name, data_type: item_children.name });
+                                 UML_CLASS[indice].class_services.push({ service_name: 'set_' + ebj_children.name, argument_name: 'pt_' + ebj_children.name, data_type: 'String' });
+                              }
+
+                              if( ebj_children.domain === 'Number' ) {
+                                 UML_CLASS[indice].class_attributes.push({ attribute_name: ebj_children.name, attribute_domain: 'Integer', attribute_type: 'var', requested_creation: 'No', null_allowed: 'Yes' });
+                                 UML_CLASS[indice].class_services.push({ service_name: 'set_' + ebj_children.name, argument_name: 'p_this' + item_children.name, data_type: item_children.name });
+                                 UML_CLASS[indice].class_services.push({ service_name: 'set_' + ebj_children.name, argument_name: 'pt_' + ebj_children.name, data_type: 'Integer' });
+                              }
+
+                              if( ebj_children.domain === 'Money' ) {
+                                 UML_CLASS[indice].class_attributes.push({ attribute_name: ebj_children.name, attribute_domain: 'Integer', attribute_type: 'var', requested_creation: 'No', null_allowed: 'Yes' });
+                                 UML_CLASS[indice].class_services.push({ service_name: 'set_' + ebj_children.name, argument_name: 'p_this' + item_children.name, data_type: item_children.name });
+                                 UML_CLASS[indice].class_services.push({ service_name: 'set_' + ebj_children.name, argument_name: 'pt_' + ebj_children.name, data_type: 'Integer' });
+                              }
+
+                              if( ebj_children.domain === 'Date' ) {
+                                 UML_CLASS[indice].class_attributes.push({ attribute_name: ebj_children.name, attribute_domain: 'Date', attribute_type: 'var', requested_creation: 'No', null_allowed: 'Yes' });
+                                 UML_CLASS[indice].class_services.push({ service_name: 'set_' + ebj_children.name, argument_name: 'p_this' + item_children.name, data_type: item_children.name });
+                                 UML_CLASS[indice].class_services.push({ service_name: 'set_' + ebj_children.name, argument_name: 'pt_' + ebj_children.name, data_type: 'Date' });
+                              }
+
+                        } else if( cantidad > 1 ) {
+
+                           if( ebj_children.domain === 'Text' ) {
+                              UML_CLASS[indice].class_attributes.push({ attribute_name: ebj_children.name, attribute_domain: 'String', attribute_type: 'var', requested_creation: 'No', null_allowed: 'Yes' });
+                              UML_CLASS[indice].class_services.push({ service_name: 'set_' + item.name, argument_name: 'pt_' + ebj_children.name, data_type: 'String' });
+                           }
+                           
+                           if( ebj_children.domain === 'Number' ) {
+                              UML_CLASS[indice].class_attributes.push({ attribute_name: ebj_children.name, attribute_domain: 'Integer', attribute_type: 'var', requested_creation: 'No', null_allowed: 'Yes' });
+                              UML_CLASS[indice].class_services.push({ service_name: 'set_' + item.name, argument_name: 'pt_' + ebj_children.name, data_type: 'String' });
+                           }
+
+                           if( ebj_children.domain === 'Money' ) {
+                              UML_CLASS[indice].class_attributes.push({ attribute_name: ebj_children.name, attribute_domain: 'Integer', attribute_type: 'var', requested_creation: 'No', null_allowed: 'Yes' });
+                              UML_CLASS[indice].class_services.push({ service_name: 'set_' + item.name, argument_name: 'pt_' + ebj_children.name, data_type: 'Number' });
+                        }
+
+                           if( ebj_children.domain === 'Date' ) {
+                              UML_CLASS[indice].class_attributes.push({ attribute_name: ebj_children.name, attribute_domain: 'Date', attribute_type: 'var', requested_creation: 'No', null_allowed: 'Yes' });
+                              UML_CLASS[indice].class_services.push({ service_name: 'set_' + item.name, argument_name: 'pt_' + ebj_children.name, data_type: 'Date' });
+                           }
+                        }
+                    }
+
+                  });
+
 
                }
    
@@ -175,6 +224,21 @@ const modelTransformationPost = (req = request, res = response) => {
 
                }
    
+            });
+         });
+      });
+
+      communicativeInteractions.forEach( prueba => {
+       
+         prueba.messageStructure.children.forEach( prueba1 => {
+
+            prueba1.children.forEach( prueba_children => {
+
+               if( prueba_children.type === 'Reference Field' && prueba_children.extends_business_object === 'True' ) {
+                  let indice_eliminar = UML_CLASS.findIndex( el => el.class_name === prueba1.name );
+                  UML_CLASS.splice(indice_eliminar, 1);
+               }
+
             });
          });
       });
