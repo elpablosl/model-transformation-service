@@ -157,25 +157,46 @@ const modelTransformationPost = (req = request, res = response) => {
                         
                         let indice = UML_CLASS.findIndex(el => el.class_name === iteration_children.name );
 
-                        if( children_iteration.domain === 'Number' ) {
-                           UML_CLASS[indice].class_attributes.push({ attribute_name: children_iteration.name, attribute_domain: 'Integer', attribute_type: 'const', requested_creation: 'Yes', null_allowed: 'No' });
-                           UML_CLASS[indice].class_services.push({ service_name: 'new_' + iteration_children.name, argument_name: 'p_atr' + children_iteration.name, data_type: 'Integer' });
-                        }
+                        if( children_iteration.type === 'Data Field' ) {
 
-                        if( children_iteration.domain === 'Text' ) {
-                           UML_CLASS[indice].class_attributes.push({ attribute_name: children_iteration.name, attribute_domain: 'String', attribute_type: 'const', requested_creation: 'Yes', null_allowed: 'No' });
-                           UML_CLASS[indice].class_services.push({ service_name: 'new_' + iteration_children.name, argument_name: 'p_atr' + children_iteration.name, data_type: 'String' });
-                        }
-
-                        if( children_iteration.domain === 'Date' ) {
-                           UML_CLASS[indice].class_attributes.push({ attribute_name: children_iteration.name, attribute_domain: 'Date', attribute_type: 'const', requested_creation: 'Yes', null_allowed: 'No' });
-                           UML_CLASS[indice].class_services.push({ service_name: 'new_' + iteration_children.name, argument_name: 'p_atr' + children_iteration.name, data_type: 'Date' });
-                        }
+                           if( children_iteration.domain === 'Number' ) {
+                              UML_CLASS[indice].class_attributes.push({ attribute_name: children_iteration.name, attribute_domain: 'Integer', attribute_type: 'const', requested_creation: 'Yes', null_allowed: 'No' });
+                              UML_CLASS[indice].class_services.push({ service_name: 'new_' + iteration_children.name, argument_name: 'p_atr' + children_iteration.name, data_type: 'Integer' });
+                           }
    
-                        if( children_iteration.domain === 'Money' ) {
-                           UML_CLASS[indice].class_attributes.push({ attribute_name: children_iteration.name, attribute_domain: 'Integer', attribute_type: 'const', requested_creation: 'Yes', null_allowed: 'No' });
-                           UML_CLASS[indice].class_services.push({ service_name: 'new_' + iteration_children.name, argument_name: 'p_atr' + children_iteration.name, data_type: 'Integer' });
+                           if( children_iteration.domain === 'Text' ) {
+                              UML_CLASS[indice].class_attributes.push({ attribute_name: children_iteration.name, attribute_domain: 'String', attribute_type: 'const', requested_creation: 'Yes', null_allowed: 'No' });
+                              UML_CLASS[indice].class_services.push({ service_name: 'new_' + iteration_children.name, argument_name: 'p_atr' + children_iteration.name, data_type: 'String' });
+                           }
+   
+                           if( children_iteration.domain === 'Date' ) {
+                              UML_CLASS[indice].class_attributes.push({ attribute_name: children_iteration.name, attribute_domain: 'Date', attribute_type: 'const', requested_creation: 'Yes', null_allowed: 'No' });
+                              UML_CLASS[indice].class_services.push({ service_name: 'new_' + iteration_children.name, argument_name: 'p_atr' + children_iteration.name, data_type: 'Date' });
+                           }
+      
+                           if( children_iteration.domain === 'Money' ) {
+                              UML_CLASS[indice].class_attributes.push({ attribute_name: children_iteration.name, attribute_domain: 'Integer', attribute_type: 'const', requested_creation: 'Yes', null_allowed: 'No' });
+                              UML_CLASS[indice].class_services.push({ service_name: 'new_' + iteration_children.name, argument_name: 'p_atr' + children_iteration.name, data_type: 'Integer' });
+                           }
+
                         }
+
+                        if( children_iteration.type === 'Reference Field' && children_iteration.extends_business_object === 'False' ) {
+                           
+                           let indice = UML_CLASS.findIndex(el => el.class_name === iteration_children.name );
+                           UML_CLASS[indice].class_relations.push({ class_source: iteration_children.name, class_target: children_iteration.name, class_cardinality: '[0..*]' });
+                           UML_CLASS[indice].class_services.push({ service_name: 'new_' + iteration_children.name, argument_name: 'p_agr' + children_iteration.name, data_type: children_iteration.name });
+
+                           indice = UML_CLASS.findIndex(el => el.class_name === children_iteration.name );
+                           if( indice === -1 ) {
+                              throw 'Break';
+                           }
+
+                           UML_CLASS[indice].class_relations.push({ class_source: children_iteration.name, class_target: iteration_children.name, class_cardinality: '[0..1]' });
+
+                        }
+
+                   
    
                      });
    
