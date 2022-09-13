@@ -6,7 +6,7 @@ class Server {
     constructor() {
         this.app = express();
         this.port = process.env.PORT;
-        this.usuariosPath = '/api/modelTransformation/CAtoUML';
+        this.transformationPath = '/api/modelTransformation/CAtoUML';
 
         // Middlewares
         this.middlewares();
@@ -29,7 +29,7 @@ class Server {
 
     routes() {
 
-        this.app.use(this.usuariosPath, require('../routes/model_transformation'));
+        this.app.use(this.transformationPath, require('../routes/model_transformation'));
         
     }
 
