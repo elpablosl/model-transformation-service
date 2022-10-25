@@ -11,8 +11,9 @@ const modelTransformationPost = (req = request, res = response) => {
     let UML_CLASS = [];
     let clase_error;
     let clase_extendida_error;
+    let aggregation_error;
 
-    const { communicativeInteractions, starts, communicativeEvents, precedenceRelations } = req.body;
+    const { communicativeInteractions, starts, communicativeEvents, precedenceRelations, specialisedCommunicativeEvents } = req.body;
 
     starts.forEach( initNode => {
         init_node = initNode.unique;
@@ -21,6 +22,12 @@ const modelTransformationPost = (req = request, res = response) => {
     communicativeEvents.forEach( cEvents => {
         events_id.push(cEvents.unique)
     });
+
+    specialisedCommunicativeEvents.forEach( sEvents => {   
+            events_id.push(sEvents.unique);
+     });
+
+
 
     for(let i = 0; i < events_id.length; i++ ) {
 
@@ -80,10 +87,19 @@ const modelTransformationPost = (req = request, res = response) => {
                 
                 cInteractions.messageStructure.children.forEach( item => {
 
-                    UML_CLASS.push({ class_name: item.name, class_attributes: [], class_relations: [], class_services: [] });
+                    if( item.type === 'Aggregation') {
 
-                    let indice = UML_CLASS.findIndex(el => el.class_name === item.name);
-                    UML_CLASS[indice].class_attributes.push({ attribute_name: item.name + '_ID', attribute_domain: 'Integer', attribute_type: 'const', requested_creation: 'Yes', null_allowed: 'No' });
+                        UML_CLASS.push({ class_name: item.name, class_attributes: [], class_relations: [], class_services: [] });
+
+                        let indice = UML_CLASS.findIndex(el => el.class_name === item.name);
+                        UML_CLASS[indice].class_attributes.push({ attribute_name: item.name + '_ID', attribute_domain: 'Integer', attribute_type: 'const', requested_creation: 'Yes', null_allowed: 'No' });
+
+                    } else {
+
+                        aggregation_error = item.name;
+                        throw 'Break2';
+
+                    }
 
                     item.children.forEach( item_children => {
 
@@ -116,18 +132,36 @@ const modelTransformationPost = (req = request, res = response) => {
                         if( item_children.type === 'Reference Field' && item_children.extends_business_object === 'False' ) {
 
                             let indice = UML_CLASS.findIndex(el => el.class_name === item.name);
-                            UML_CLASS[indice].class_relations.push({ class_source: item.name, class_target: item_children.name, class_cardinality: '[0..*]' });
+                            UML_CLASS[indice].class_relations.push({ class_source: item.name, class_target: item_children.name, class_cardinality: '[0..*]', class_type_relation: 'dynamic' });
                             UML_CLASS[indice].class_services.push({ service_name: 'new_' + item.name, argument_name: 'p_agr' + item_children.name, data_type: item_children.name });
 
                             
-                            // Pendiente de agregar error en caso que no exista la clase referenciada
                             indice = UML_CLASS.findIndex(el => el.class_name === item_children.name );
                             if( indice === -1 ) {
                               clase_error = item_children.name;
                               throw 'Break';
                            }
 
-                            UML_CLASS[indice].class_relations.push({ class_source: item_children.name, class_target: item.name, class_cardinality: '[0..1]' });
+
+                        if( item_children.min_cardinality == 1) {
+                                UML_CLASS[indice].class_relations.push({ class_source: item_children.name, class_target: item.name, class_cardinality: `[${item_children.min_cardinality}..1]`, class_type_relation: 'static' });
+                        } else if( item_children.min_cardinality == 0 ) {
+                                
+                            UML_CLASS[indice].class_relations.push({ class_source: item_children.name, class_target: item.name, class_cardinality: `[${item_children.min_cardinality}..1]`, class_type_relation: 'dynamic' });
+                            UML_CLASS[indice].class_services.push({ service_name: 'ins_' + item_children.name, type_service: 'shared', operation: 'insert', first_argument: { name: 'p_this' + item_children.name, data_type: item_children.name, null_allowed: 'no' },
+                                second_argument: { name: 'p_evc' + item.name, data_type: item.name, null_allowed: 'no' } });
+                            UML_CLASS[indice].class_services.push({ service_name: 'del_' + item_children.name, type_service: 'shared', operation: 'delete', first_argument: { name: 'p_this' + item_children.name, data_type: item_children.name, null_allowed: 'no' },
+                                second_argument: { name: 'p_evc' + item.name, data_type: item.name, null_allowed: 'no' } });
+
+                            let indiceClaseP = UML_CLASS.findIndex(el => el.class_name === item.name);
+                            UML_CLASS[indiceClaseP].class_services.push({ service_name: 'ins_' + item_children.name, type_service: 'shared', operation: 'insert', first_argument: { name: 'p_this' + item.name, data_type: item.name, null_allowed: 'no' },
+                                second_argument: { name: 'p_evc' + item_children.name, data_type: item_children.name, null_allowed: 'no' } });
+                            UML_CLASS[indiceClaseP].class_services.push({ service_name: 'del_' + item_children.name, type_service: 'shared', operation: 'delete', first_argument: { name: 'p_this' + item.name, data_type: item.name, null_allowed: 'no' },
+                                second_argument: { name: 'p_evc' + item_children.name, data_type: item_children.name, null_allowed: 'no' } });
+
+                        }
+
+                            
 
 
                         } else if( item_children.type === 'Reference Field' && item_children.extends_business_object === 'True' ) {
@@ -226,10 +260,25 @@ const modelTransformationPost = (req = request, res = response) => {
                                 UML_CLASS[indice].class_services.push({ service_name: 'new_' + iteration_children.name, argument_name: 'p_agr' + item.name, data_type: item.name });
 
                                 indice = UML_CLASS.findIndex(el => el.class_name === item.name );
-                                UML_CLASS[indice].class_relations.push({ class_source: item.name, class_target: iteration_children.name, class_cardinality: '[0..1]' });
-   
+                                if( item.min_cardinality == 1) {
+                                    UML_CLASS[indice].class_relations.push({ class_source: item.name, class_target: iteration_children.name, class_cardinality: `[${item.min_cardinality}..1]`, class_type_relation: 'static' });
+                                } else if( item.min_cardinality == 0 ) {
+                                    UML_CLASS[indice].class_relations.push({ class_source: item.name, class_target: iteration_children.name, class_cardinality: `[${item.min_cardinality}..1]`, class_type_relation: 'dynamic' });
+                                    UML_CLASS[indice].class_services.push({ service_name: 'ins_' + iteration_children.name, type_service: 'shared', operation: 'insert', first_argument: { name: 'p_this' + item.name, data_type: item.name, null_allowed: 'no' },
+                                    second_argument: { name: 'p_evc' + iteration_children.name, data_type: iteration_children.name, null_allowed: 'no' } });
+                                    UML_CLASS[indice].class_services.push({ service_name: 'del_' + iteration_children.name, type_service: 'shared', operation: 'delete', first_argument: { name: 'p_this' + item.name, data_type: item.name, null_allowed: 'no' },
+                                    second_argument: { name: 'p_evc' + iteration_children.name, data_type: iteration_children.name, null_allowed: 'no' } });
+
+                                    let indiceClaseP = UML_CLASS.findIndex(el => el.class_name === iteration_children.name);
+                                    UML_CLASS[indiceClaseP].class_services.push({ service_name: 'ins_' + iteration_children.name, type_service: 'shared', operation: 'insert', first_argument: { name: 'p_this' + item.name, data_type: item.name, null_allowed: 'no' },
+                                    second_argument: { name: 'p_evc' + item_children.name, data_type: item_children.name, null_allowed: 'no' } });
+                                    UML_CLASS[indiceClaseP].class_services.push({ service_name: 'del_' + iteration_children.name, type_service: 'shared', operation: 'delete', first_argument: { name: 'p_this' + iteration_children.name, data_type: iteration_children.name, null_allowed: 'no' },
+                                    second_argument: { name: 'p_evc' + item.name, data_type: item.name, null_allowed: 'no' } });
+
+                                }
+                                
                                 indice = UML_CLASS.findIndex(el => el.class_name === iteration_children.name );
-                                UML_CLASS[indice].class_relations.push({ class_source: iteration_children.name, class_target: item.name, class_cardinality: '[0..*]' });
+                                UML_CLASS[indice].class_relations.push({ class_source: iteration_children.name, class_target: item.name, class_cardinality: '[0..*]', class_type_relation: 'dynamic' });
 
                                 iteration_children.children.forEach( children_iteration => {
 
@@ -286,10 +335,27 @@ const modelTransformationPost = (req = request, res = response) => {
                             UML_CLASS[indice_aggregation].class_services.push({ service_name: 'new_' + item_children.name, argument_name: 'p_agr' + item.name, data_type: item.name });
 
                             indice_aggregation = UML_CLASS.findIndex(el => el.class_name === item_children.name );
-                            UML_CLASS[indice_aggregation].class_relations.push({ class_source: item_children.name, class_target: item.name, class_cardinality: '[0..1]' });
+                            UML_CLASS[indice_aggregation].class_relations.push({ class_source: item_children.name, class_target: item.name, class_cardinality: '[0..1]', class_type_relation: 'dynamic' });
 
                             indice_aggregation = UML_CLASS.findIndex(el => el.class_name === item.name );
-                            UML_CLASS[indice_aggregation].class_relations.push({ class_soruce: item.name, class_target: item_children.name, class_cardinality: '[0..1]' });
+                            if( item.min_cardinality == 1) {
+                                UML_CLASS[indice_aggregation].class_relations.push({ class_source: item.name, class_target: item_children.name, class_cardinality: `[${ item.min_cardinality }..1]`, class_type_relation: 'static' });
+                            } else if( item.min_cardinality == 0 ) {
+                                UML_CLASS[indice_aggregation].class_relations.push({ class_source: item.name, class_target: item_children.name, class_cardinality: `[${ item.min_cardinality }..1]`, class_type_relation: 'dynamic' });
+                                UML_CLASS[indice_aggregation].class_services.push({ service_name: 'ins_' + item_children.name, type_service: 'shared', operation: 'insert', first_argument: { name: 'p_this' + item.name, data_type: item.name, null_allowed: 'no' },
+                                second_argument: { name: 'p_evc' + item_children.name, data_type: item_children.name, null_allowed: 'no' } });
+                                UML_CLASS[indice_aggregation].class_services.push({ service_name: 'del_' + item_children.name, type_service: 'shared', operation: 'delete', first_argument: { name: 'p_this' + item.name, data_type: item.name, null_allowed: 'no' },
+                                second_argument: { name: 'p_evc' + item_children.name, data_type: item_children.name, null_allowed: 'no' } });
+
+                                let indiceRefClass = UML_CLASS.findIndex(el => el.class_name === item_children.name);
+                                UML_CLASS[indiceRefClass].class_services.push({ service_name: 'ins_' + item_children.name, type_service: 'shared', operation: 'insert', first_argument: { name: 'p_this' + item_children.name, data_type: item_children.name, null_allowed: 'no' },
+                                second_argument: { name: 'p_evc' + item.name, data_type: item.name, null_allowed: 'no' } });
+                                UML_CLASS[indiceRefClass].class_services.push({ service_name: 'del_' + item_children.name, type_service: 'shared', operation: 'delete', first_argument: { name: 'p_this' + item_children.name, data_type: item_children.name, null_allowed: 'no' },
+                                second_argument: { name: 'p_evc' + item.name, data_type: item.name, null_allowed: 'no' } });
+
+                                
+                            }
+                            
 
                             item_children.children.forEach( aggregation_children => {
 
@@ -328,40 +394,45 @@ const modelTransformationPost = (req = request, res = response) => {
         });
     }
 
+
     const result = sortByKahnsAlgorithm(events);
+    
 
     for(let i = 0; i < result.length; i++) {
         processingInteractiveComunications(result[i].id_evento);
     }
 
-    communicativeInteractions.forEach( prueba => {
-       
+    communicativeInteractions.forEach( prueba => {     
         prueba.messageStructure.children.forEach( prueba1 => {
-
-           prueba1.children.forEach( prueba_children => {
-
-              if( prueba_children.type === 'Reference Field' && prueba_children.extends_business_object === 'True' ) {
+            prueba1.children.forEach( prueba_children => {
+                
+               if( prueba_children.type === 'Reference Field' && prueba_children.extends_business_object === 'True' ) {
                  let indice_eliminar = UML_CLASS.findIndex( el => el.class_name === prueba1.name );
                  UML_CLASS.splice(indice_eliminar, 1);
               }
 
-           });
-        });
-     });
+            });
+         });
+    });
     
     res.json(UML_CLASS);
 
     } catch(error) {
     
+        if( error == 'Break2') 
+            return res.status(401).json({
+                msg: `Error, el elemento ${ aggregation_error } no es una agregación`
+        })
+        
         if( error == 'Break' ) 
-        return res.status(401).json({
-            msg: `Error, clase ${ clase_error } no referenciada`
-      })
+            return res.status(401).json({
+                msg: `Error, clase ${ clase_error } no referenciada`
+        })
 
-      if( error == 'Break1' ) 
+        if( error == 'Break1' ) 
         return res.status(401).json({
             msg: `Error, clase ${ clase_extendida_error } no referenciada`
-      })
+        })
         
     }
 
