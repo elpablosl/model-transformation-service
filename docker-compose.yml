@@ -1,0 +1,26 @@
+version: "3"
+
+# Definición de servicios
+
+services:
+  ca-to-uml:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports: 
+      - "8080:8080"
+    networks:
+      - red_proxy
+      - red_privada
+    environment:
+      VIRTUAL_HOST: localhost
+    container_name: ca-to-uml
+
+
+# El nombre de las redes no cambia (red_proxy y red_privada son estandar)
+networks:                  # Definir redes
+  red_proxy:               # Nombre de una red
+    external:              # Indica que es una red externa al docker-compose
+      name: nginx-proxy    # Nombre de la Red de uso publico entre Docker
+  red_privada:             # Nombre de una red que depende del docker-compose
