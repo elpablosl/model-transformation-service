@@ -1,6 +1,6 @@
 # Model Transformation Service (CA to UML)
 
-En primer lugar se debe descargar el proyecto desde: ```https://github.com/elpablosl/model-transformation-service```. Una vez descargado el proyecto se debe tener NodeJS instalado,
+En primer lugar se debe descargar el proyecto desde: La [URL del repositorio](https://github.com/elpablosl/model-transformation-service). Una vez descargado el proyecto se debe tener NodeJS instalado,
 una vez realizada la instalación de Node , see debe ejecutar el comando ```npm install``` para reconstruir los módulos de Node. Finalmente para ejecutar el proyecto se debe colocar
 en el terminal, el comando: ```node app```.
 
