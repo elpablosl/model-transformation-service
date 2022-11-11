@@ -350,15 +350,14 @@ const modelTransformationPost = (req = request, res = response) => {
         processingInteractiveComunications(result[i].id_evento);
     }
 
-    communicativeInteractions.forEach( prueba => {     
-        prueba.messageStructure.children.forEach( prueba1 => {
-            prueba1.children.forEach( prueba_children => {
+    communicativeInteractions.forEach( CI_children => {     
+        CI_children.messageStructure.children.forEach( mStructure => {
+            mStructure.children.forEach( mstructure_children => {
                 
-               if( prueba_children.type === 'Reference Field' && prueba_children.extends_business_object === 'True' ) {
-                 let indice_eliminar = UML_CLASS.findIndex( el => el.class_name === prueba1.name );
+               if( mstructure_children.type === 'Reference Field' && mstructure_children.extends_business_object === 'True' ) {
+                 let indice_eliminar = UML_CLASS.findIndex( el => el.class_name === mStructure.name );
                  UML_CLASS.splice(indice_eliminar, 1);
               }
-
             });
          });
     });
