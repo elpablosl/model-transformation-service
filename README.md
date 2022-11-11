@@ -5,7 +5,7 @@ en el terminal, el comando: ```node app```.
 
 Para utilizar el servicio de transformación tiene que ser por medio de herramientas de API Testing, como por ejemplo Postman y Soap UI, entre otras, por medio de un método
 post, si se ejecuta de forma local la URL es la siguiente: ```http://localhost:8080/api/modelTransformation/CAtoUML``` y se mandan como parámetros una entrada de un modelo de
-Análisis Comunicacional generado en la siguiente herramienta: ```https://pros-ca-modeler.netlify.app```. Por otro lado también se tiene disposición la siguiente URL para
+Análisis Comunicacional generado en la siguiente herramienta: ```https://pros-ca-modeler.netlify.app```. Por otro lado también se tiene a disposición la siguiente URL para
 ejecutar el servicio de transformación ```catouml.informatica.uv.cl/api/modelTransformation/CAtoUML```.
 
 De todos modos a continuación se deja un ejemplo del formato de entrada para testear la API del servicio de transformación:
