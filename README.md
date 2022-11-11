@@ -1127,3 +1127,11 @@ De todos modos a continuación se deja un ejemplo del formato de entrada para te
 </details>
 
 # Pasos instalación Docker:
+
+Para realizar la instalación del proyecto mediante Docker, se deben seguir los pasos que se presentan a continuación.
+
+1. Ingresar el comando en la carpeta principal del proyecto ```docker network create nginx-proxy```
+
+2. Luego en la carpeta nginx se debe colocar el comando ```docker compose up -d```
+
+3. Finalmente en la carpeta principal se coloca igualmente ```docker compose up -d```
