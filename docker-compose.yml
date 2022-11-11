@@ -14,7 +14,7 @@ services:
       - red_proxy
       - red_privada
     environment:
-      VIRTUAL_HOST: localhost
+      VIRTUAL_HOST: catouml.informatica.uv.cl
     container_name: ca-to-uml
 
 
