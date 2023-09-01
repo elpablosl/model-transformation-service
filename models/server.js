@@ -28,9 +28,7 @@ class Server {
     }
 
     routes() {
-
-        this.app.use(this.transformationPath, require('../routes/model_transformation'));
-        
+        this.app.use(this.transformationPath, require('../controllers/model_transformation'));     
     }
 
     listen() {
