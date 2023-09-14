@@ -1,9 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 
-const https = require('https');
-const fs =  require('fs');
-
 class Server {
 
     constructor() {
@@ -16,14 +13,6 @@ class Server {
 
         // Rutas de la aplicación
         this.routes();
-
-        // Configuración HTTPS
-        const httpsOptions = {
-            key: fs.readFileSync('certificados/key.pem'),
-            cert: fs.readFileSync('certificados/cert.pem')
-        };
-
-        this.httpsServer = https.createServer(httpsOptions, this.app);
 
     }
 
@@ -43,8 +32,8 @@ class Server {
     }
 
     listen() {
-        this.httpsServer.listen(this.port, () => {
-            console.log('Servidor HTTPS corriendo en puerto', this.port);
+        this.app.listen( this.port, () => {
+            console.log('Servidor corriendo en puerto', this.port );
         });
     }
 
