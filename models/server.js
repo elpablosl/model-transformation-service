@@ -19,7 +19,9 @@ class Server {
     middlewares() {
 
         // CORS
-        this.app.use( cors() );
+        this.app.use( cors({
+            origin: ['https://relaxed-khapse-1ab329.netlify.app/']
+        }));
 
         // Lectura y parseo del body
         this.app.use( express.json() );
