@@ -18,9 +18,12 @@ class Server {
 
     middlewares() {
 
-        // CORS
-        this.app.use( cors({
-            origin: ['https://relaxed-khapse-1ab329.netlify.app/']
+         // CORS
+         this.app.use(cors({
+            origin: 'https://relaxed-khapse-1ab329.netlify.app', // Cambia al dominio desde donde se harán las solicitudes
+            methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Métodos permitidos
+            credentials: true, // Habilita el uso de credenciales (cookies, encabezados de autorización, etc.) en la solicitud
+            optionsSuccessStatus: 204 // Establece el código de estado para las solicitudes OPTIONS exitosas
         }));
 
         // Lectura y parseo del body
